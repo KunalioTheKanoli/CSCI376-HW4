@@ -26,14 +26,27 @@ const questions = [
         { text: "Computer Style Sheets", correct: false },
         { text: "Creative Style Syntax", correct: false }
       ]
+    },
+    {
+      question: "Which of these colors is NOT on the flag of India?",
+      answers: [
+        { text: "Orange", correct: false },
+        { text: "Green", correct: false },
+        { text: "Indigo", correct: true },
+        { text: "Blue", correct: false }
+      ]
     }
   ];
   
   // 2. How do we know what id to search for when using document.getElementById()? Where are the following ids specified in index.html? 
-  // 
+  // When using document.getElementById(), we know to search for a particular ID through the HTML code in index.html. Each relevant element
+  // has a corresponding attribute in the HTML code. For instance, the question ID is specified in Line 14 in the HTML file, along with
+  // Line 15 for the answer button ID and Line 18 for the next button ID. These IDs match with the strings we pass in the document.getElementById()
+  // command in the Javascript file, which is why we can do our search. 
   const questionElement = document.getElementById("question");
   const answerButtonsElement = document.getElementById("answer-buttons");
   const nextButton = document.getElementById("next-btn");
+  const hintButton = document.getElementById("hint-btn")
   
   let currentQuestionIndex = 0;
   let score = 0;
@@ -52,7 +65,10 @@ const questions = [
   
     currentQuestion.answers.forEach(answer => {
       // 3. Why are these HTML elements being created dynamically in the JS file, while other page elements are defined statically in the HTML file?
-      // 
+      // The HTML elements are created dynamically because the content of the answer buttons changes based on which question is being shown. There
+      // is a chance the number of answer buttons can change, too, but not in our case. If these elements were statically created, we would have to 
+      // manually code each button for each possible answer. Creating them dynamically gives us more flexibilty and lets us change question data and
+      // answers more easily.  
       const button = document.createElement("button");
       button.textContent = answer.text;
       button.classList.add("btn");
@@ -61,13 +77,17 @@ const questions = [
       }
       button.addEventListener("click", selectAnswer);
       // 4. What is the line below doing? 
-      // 
+      // It adds in the button element with its text and classList into the answerButtonsElement. 
+      // The line below essentially adds each answer button to the page so the user can see and click it. 
       answerButtonsElement.appendChild(button);
+      hintButton.style.display = "block";
+      hintButton.disabled = false;
     });
   }
   
   function resetState() {
     nextButton.style.display = "none";
+    hintButton.style.display = "none";
     answerButtonsElement.innerHTML = "";
   }
   
@@ -88,7 +108,8 @@ const questions = [
       button.disabled = true;
     });
     // 5. Why is it important to change the display styling rule for the "Next" button to "block" here? What would happen if you did not have this line?
-    // 
+    // Changing the display styling rule makes the "Next" button visible after the user picks an answer. This lets them move on to the next question.
+    // If we didn't put that line in, the "Next" button would stay hidden, meaning the user would be stuck on the same question and couldn't move on to the next one.
     nextButton.style.display = "block";
   }
   
@@ -109,7 +130,12 @@ const questions = [
   }
   
   // 6. Summarize in your own words what you think this block of code is doing. 
-  // 
+  // The block of code is waiting for the user to click the "Next" button. If there
+  // are still more questions, which we see with the currentQuestionIndex < questions.length
+  // portion, the code calls handleNextButton() to load our next question. Otherwise, once the 
+  // user has reached the end of the quiz, startQuiz() is called to restart it from the beginning. 
+  // In other words, our block of code determines whether or not to move to the next question or restart
+  // once we're on the last question. 
   nextButton.addEventListener("click", () => { 
     if (currentQuestionIndex < questions.length) {
       handleNextButton();
@@ -117,6 +143,22 @@ const questions = [
       startQuiz();
     }
   });
+
+  hintButton.addEventListener("click", () => {
+    const buttons = Array.from(answerButtonsElement.children);
+  
+    const incorrectButtons = buttons.filter(
+      (btn) => btn.dataset.correct !== "true" && !btn.classList.contains("wrong")
+    );
+  
+    if (incorrectButtons.length > 0) {
+      const randomIndex = Math.floor(Math.random() * incorrectButtons.length);
+      incorrectButtons[randomIndex].classList.add("wrong");
+  
+      hintButton.disabled = true;
+    }
+  });
+  
   
   startQuiz();
   
